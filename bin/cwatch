@@ -1,0 +1,92 @@
+#!/usr/bin/env ruby
+require 'gli'
+require_relative '../lib/util/poll'
+require_relative '../lib/util/urls'
+require_relative '../lib/util/table'
+require_relative '../lib/util/fetch'
+
+begin
+  # XXX: Remove this begin/rescue before distributing your app
+  require 'cwatch'
+rescue LoadError
+  STDERR.puts "In development, you need to use `bundle exec bin/cwatch` to run your app"
+  STDERR.puts "At install-time, RubyGems will make sure lib, etc. are in the load path"
+  STDERR.puts "Feel free to remove this message from bin/cwatch now"
+  exit 64
+end
+
+class App
+  extend GLI::App
+
+  program_desc 'Watching the crypto coin changes on coinbase.'
+
+  version Cwatch::VERSION
+
+  subcommand_option_handling :normal
+  arguments :strict
+
+  desc 'Watches the price for the crypto coin on coinbase pro.'
+  arg_name 'Describe arguments to watch here'
+  command :watch do |c|
+    c.desc 'The initial fiat investment in the coin'
+    c.default_value 1000.0
+    c.flag :i
+
+    c.desc 'Initial coin fiat price'
+    c.default_value 2.16
+    c.flag :p
+
+    c.desc 'Coin abbreviation i.e. BTC, ETH, ADA'
+    c.default_value 'ADA'
+    c.flag :t
+
+    c.desc 'Fiat currency abbreviation i.e. USD, EUR'
+    c.default_value 'EUR'
+    c.flag :f
+
+    c.action do |global_options, options, args|
+
+      # If you have any errors, just raise them
+      # raise "that command made no sense"
+
+      Poll.poll do
+        buy = FetchPrice.fetch options[:t], options[:f], CoinBase::BUY
+        sell = FetchPrice.fetch options[:t], options[:f], CoinBase::SELL
+        spot = FetchPrice.fetch options[:t], options[:f], CoinBase::SPOT
+
+        Table.print buy, sell, spot
+      end
+    end
+  end
+
+  desc 'Describe info here'
+  arg_name 'Describe arguments to info here'
+  command :info do |c|
+    c.action do |global_options, options, args|
+      puts "info command ran"
+    end
+  end
+
+  pre do |global, command, options, args|
+    # Pre logic here
+    # Return true to proceed; false to abort and not call the
+    # chosen command
+    # Use skips_pre before a command to skip this block
+    # on that command only
+    true
+  end
+
+  post do |global, command, options, args|
+    # Post logic here
+    # Use skips_post before a command to skip this
+    # block on that command only
+  end
+
+  on_error do |exception|
+    # Error logic here
+    # return false to skip default error handling
+    true
+  end
+end
+
+exit App.run(ARGV)

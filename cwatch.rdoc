@@ -1,0 +1,5 @@
+= cwatch
+
+Generate this with
+    cwatch _doc
+After you have described your command line interface
