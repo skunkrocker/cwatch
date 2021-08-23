@@ -99,10 +99,7 @@ class App
 
     c.action do |global_options, options, args|
       roi_list = ROI.calculate options[:t], options[:f], @db.all_for_token(options[:t])
-      puts roi_list
-
-      #coins = @db.all
-      #Table.render_coins coins
+      Table.render_roi roi_list
     end
   end
 
