@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
 require 'gli'
+require 'sqlite3'
+require 'fileutils'
+
 require_relative '../lib/util/poll'
 require_relative '../lib/util/urls'
 require_relative '../lib/util/table'
@@ -26,15 +29,10 @@ class App
   arguments :strict
 
   desc 'Watches the price for the crypto coin on coinbase pro.'
-  arg_name 'Describe arguments to watch here'
   command :watch do |c|
     c.desc 'The initial fiat investment in the coin'
     c.default_value 1000.0
     c.flag :i
-
-    c.desc 'Initial coin fiat price'
-    c.default_value 2.16
-    c.flag :p
 
     c.desc 'Coin abbreviation i.e. BTC, ETH, ADA'
     c.default_value 'ADA'
@@ -58,12 +56,38 @@ class App
       end
     end
   end
+  desc 'Add bought coin to the portfolio.'
+  command :add do |c|
 
-  desc 'Describe info here'
-  arg_name 'Describe arguments to info here'
-  command :info do |c|
+    c.desc 'The exchange rate paid for the coin.'
+    c.flag :r
+
+    c.desc 'Amount of tokens bought.'
+    c.flag :a
+
+    c.desc 'Fees paid to coin base.'
+    c.flag :c
+
+    c.desc 'Coin abbreviation i.e. BTC, ETH, ADA'
+    c.default_value 'ADA'
+    c.flag :t
+
+    c.desc 'Fiat currency abbreviation i.e. USD, EUR'
+    c.default_value 'EUR'
+    c.flag :f
+
     c.action do |global_options, options, args|
-      puts "info command ran"
+      begin
+        @db.execute "INSERT INTO coin (amount, rate, fees, token, fiat) VALUES (?,?,?,?,?)",
+                    options[:a], options[:r], options[:c], options[:t], options[:f]
+        # test if the entity is saved in the db
+        # @db.execute("select * from coin").each do |coin|
+        #  puts "token amount: #{coin[0]}"
+        #end
+
+      rescue SQLite3::Exception => e
+        puts e.message || 'could not add the coin buy to the portfolio'
+      end
     end
   end
 
@@ -73,6 +97,23 @@ class App
     # chosen command
     # Use skips_pre before a command to skip this block
     # on that command only
+    db_file = "#{Dir.home}/.portfolio.db"
+    FileUtils.touch db_file unless File.exist? db_file
+    begin
+      @db = SQLite3::Database.new db_file
+      @db.execute <<-SQL
+          CREATE TABLE IF NOT EXISTS coin(
+            amount REAL,
+            rate REAL,
+            fees REAL, 
+            token TEXT,
+            fiat TEXT
+           )
+      SQL
+    rescue SQLite3::Exception => e
+      puts 'failed to load the db'.red
+      retu
+    end
     true
   end
 
@@ -80,11 +121,15 @@ class App
     # Post logic here
     # Use skips_post before a command to skip this
     # block on that command only
+  ensure
+    @db.close if @db
   end
 
   on_error do |exception|
     # Error logic here
     # return false to skip default error handling
+  ensure
+    @db.close if @db
     true
   end
 end
