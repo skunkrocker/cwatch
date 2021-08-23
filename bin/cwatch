@@ -80,11 +80,9 @@ class App
       begin
         @db.execute "INSERT INTO coin (amount, rate, fees, token, fiat) VALUES (?,?,?,?,?)",
                     options[:a], options[:r], options[:c], options[:t], options[:f]
-        # test if the entity is saved in the db
-        # @db.execute("select * from coin").each do |coin|
-        #  puts "token amount: #{coin[0]}"
-        #end
 
+        coins = @db.execute "select * from coin"
+        Table.render_coins coins
       rescue SQLite3::Exception => e
         puts e.message || 'could not add the coin buy to the portfolio'
       end

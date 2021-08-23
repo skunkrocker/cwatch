@@ -22,5 +22,24 @@ module Table
     puts table
   end
 
-  module_function :print
+  def render_coins(coin_entries)
+    rows = []
+    headings = ['Coin Amount'.green, 'Buy Rate'.green, 'CB Fees'.green, 'Token'.green, 'Fiat'.green]
+    coin_entries.sort_by { |c| c[3] }.each_with_index do |coin, index|
+      if index % 2 == 0
+        rows << coin.map { |c| c.to_s.light_red }
+      else
+        rows << coin.map { |c| c.to_s.light_blue }
+      end
+    end
+    table = Terminal::Table.new :rows => rows, :headings => headings, :style => { :border_top => false,
+                                                                                  :border_left => false,
+                                                                                  :border_right => false,
+                                                                                  :border_bottom => false }
+
+    system("clear")
+    puts table
+  end
+
+  module_function :print, :render_coins
 end
