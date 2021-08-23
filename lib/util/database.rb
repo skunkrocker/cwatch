@@ -39,6 +39,14 @@ class Database
     end
   end
 
+  def all_for_token(token)
+    begin
+      @db.execute "select * from coin where token = ?", token
+    rescue SQLite3::Exception => e
+      puts e.message || 'could not read the coins from portfolio'
+    end
+  end
+
   def dispose
     @db.close if @db
   end

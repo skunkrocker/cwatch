@@ -57,6 +57,7 @@ class App
       end
     end
   end
+
   desc 'Add bought coin to the portfolio.'
   command :add do |c|
 
@@ -81,6 +82,39 @@ class App
       @db.add options
       coins = @db.all
       Table.render_coins coins
+    end
+  end
+
+  desc 'Calculate ROI for a token against current price and portfolio.'
+  command :roi do |c|
+
+    c.desc 'Coin abbreviation i.e. BTC, ETH, ADA'
+    c.default_value 'ADA'
+    c.flag :t
+
+    c.desc 'Fiat currency abbreviation i.e. USD, EUR'
+    c.default_value 'EUR'
+    c.flag :f
+
+    c.action do |global_options, options, args|
+      sell = FetchPrice.fetch options[:t], options[:f], CoinBase::SELL
+      sell_price = sell['data']['amount'].to_f
+      roi_list = []
+      @db.all_for_token(options[:t]).each do |single_buy|
+        amount = single_buy[0]
+        original_price = single_buy[1]
+
+        initial_invest = (amount * original_price) + single_buy[2]
+        current_invest = amount * sell_price
+        difference = current_invest - initial_invest
+        roi = difference / initial_invest
+        roi_list << [original_price, sell_price, difference.ceil(2), (roi * 100).ceil(2), options[:t], options[:f]]
+      end
+
+      puts roi_list
+
+      #coins = @db.all
+      #Table.render_coins coins
     end
   end
 
