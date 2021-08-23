@@ -3,6 +3,7 @@ require 'gli'
 require 'sqlite3'
 require 'fileutils'
 
+require_relative '../lib/util/roi'
 require_relative '../lib/util/poll'
 require_relative '../lib/util/urls'
 require_relative '../lib/util/table'
@@ -97,20 +98,7 @@ class App
     c.flag :f
 
     c.action do |global_options, options, args|
-      sell = FetchPrice.fetch options[:t], options[:f], CoinBase::SELL
-      sell_price = sell['data']['amount'].to_f
-      roi_list = []
-      @db.all_for_token(options[:t]).each do |single_buy|
-        amount = single_buy[0]
-        original_price = single_buy[1]
-
-        initial_invest = (amount * original_price) + single_buy[2]
-        current_invest = amount * sell_price
-        difference = current_invest - initial_invest
-        roi = difference / initial_invest
-        roi_list << [original_price, sell_price, difference.ceil(2), (roi * 100).ceil(2), options[:t], options[:f]]
-      end
-
+      roi_list = ROI.calculate options[:t], options[:f], @db.all_for_token(options[:t])
       puts roi_list
 
       #coins = @db.all
