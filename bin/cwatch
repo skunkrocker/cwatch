@@ -23,7 +23,7 @@ end
 class App
   extend GLI::App
 
-  program_desc 'Watching the crypto coin changes on coinbase.'
+  program_desc 'Offers different Coin Base portfolio functionality to watch coin price or calculate return of investment (ROI)'
 
   version Cwatch::VERSION
 
@@ -97,9 +97,31 @@ class App
     c.default_value 'EUR'
     c.flag :f
 
+    c.desc 'Refresh ROI calculation every 60s'
+    c.default_value false
+    c.switch :p
+
+    c.desc 'Refresh ROI rate'
+    c.default_value 60
+    c.switch :r
+
     c.action do |global_options, options, args|
-      roi_list = ROI.calculate options[:t], options[:f], @db.all_for_token(options[:t])
-      Table.render_roi roi_list
+      fiat = options[:f]
+      token = options[:t]
+      poll = options[:p]
+      delay = options[:r]
+
+      owned_coins = @db.all_for token
+
+      if poll
+        Poll.poll delay do
+          calculation_list = ROI.calculate_for token, fiat, owned_coins
+          Table.render_roi calculation_list
+        end
+      else
+        roi_list = ROI.calculate_for token, fiat, owned_coins
+        Table.render_roi roi_list
+      end
     end
   end
 

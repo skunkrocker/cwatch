@@ -1,6 +1,6 @@
 module ROI
 
-  def calculate(token, fiat, portfolio_tokens)
+  def calculate_for(token, fiat, portfolio_tokens)
     sell = FetchPrice.fetch token, fiat, CoinBase::SELL
     sell_price = sell['data']['amount'].to_f
     roi_list = []
@@ -21,5 +21,5 @@ module ROI
     roi_list
   end
 
-  module_function :calculate
+  module_function :calculate_for
 end

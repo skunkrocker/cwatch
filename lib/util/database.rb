@@ -39,7 +39,7 @@ class Database
     end
   end
 
-  def all_for_token(token)
+  def all_for(token)
     begin
       @db.execute "select * from coin where token = ?", token
     rescue SQLite3::Exception => e
