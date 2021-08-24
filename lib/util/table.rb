@@ -3,7 +3,7 @@ require 'terminal-table'
 
 module Table
 
-  def print(buy, sell, spot)
+  def render_watch(buy, sell, spot)
     rows = []
     heads = ['Buy €'.light_blue, 'Sell €'.light_red, 'Spot €'.light_blue]
     buy_price = buy['data']['amount']
@@ -68,5 +68,5 @@ module Table
     puts table
   end
 
-  module_function :print, :render_coins, :render_roi
+  module_function :render_watch, :render_coins, :render_roi
 end

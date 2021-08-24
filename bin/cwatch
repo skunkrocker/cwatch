@@ -54,7 +54,7 @@ class App
         sell = FetchPrice.fetch options[:t], options[:f], CoinBase::SELL
         spot = FetchPrice.fetch options[:t], options[:f], CoinBase::SPOT
 
-        Table.print buy, sell, spot
+        Table.render_watch buy, sell, spot
       end
     end
   end
