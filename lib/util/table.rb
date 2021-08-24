@@ -28,9 +28,9 @@ module Table
 
     coin_entries.sort_by { |c| c[3] }.each_with_index do |coin, index|
       if index % 2 == 0
-        rows << coin.map { |c| c.to_s.light_red }
-      else
         rows << coin.map { |c| c.to_s.light_blue }
+      else
+        rows << coin.map { |c| c.to_s.light_red }
       end
     end
 
@@ -50,9 +50,9 @@ module Table
     roi_results.each_with_index do |roi, index|
       total_roi += roi[3]
       if index % 2 == 0
-        rows << roi.map { |c| c.to_s.light_red }
-      else
         rows << roi.map { |c| c.to_s.light_blue }
+      else
+        rows << roi.map { |c| c.to_s.light_red }
       end
     end
 
